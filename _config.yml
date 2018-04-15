@@ -16,7 +16,7 @@
 title: Yiqi's programming blog
 email: luyiqi@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  I'll post about things I learn as well as programming on this blog. I'm currently working
+  I'll post about programming and things I'm working/learning on this blog. I'm currently working
   with Java and Scala, and am interested in functional programming, type theory.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
