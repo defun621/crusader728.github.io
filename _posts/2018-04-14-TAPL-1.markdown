@@ -8,7 +8,7 @@ categories: TAPL
 > 学习材料： [Types and Programming Lanaguages][1]
 
 Hoare logic等formal verification的方法在实际中实现起来很难。
-我们想要降低实现的成本却又能保证一个软件系统能够按照specification正确运行的formal method，其中被运用最广的就是类型系统(type systems)。
+我们想要降低实现的成本却又能保证一个软件系统能够按照specification正确运行的formal method。其中被运用最广的就是类型系统(type systems)。
 
 类型系统的定义：
 
