@@ -1,0 +1,28 @@
+---
+layout: post
+title:  TAPL学习笔记(1)： 类型系统定义
+date:   2018-04-14 22:47:30 -0700
+categories: TAPL
+---
+
+> 学习材料： [Types and Programming Lanaguages][1]
+
+Hoare logic等formal verification的方法在实际中实现起来很难。
+我们想要降低实现的成本却又能保证一个软件系统能够按照specification正确运行的formal method。其中被运用最广的就是类型系统(type systems)。
+
+类型系统的定义：
+
+> A type system is a tractable syntactic method for proving the absence of certain program behaviors by classifying phrases according to the kinds of values they compute.
+
+类型系统有益于：
+1. 找到程序中的错误
+    静态类型检查可以使我们更早发现error。
+    为了最大的利用到类型系统提供的帮助，程序员也要注意要主动运用语言提供的功能来进行开发，举个简单的例子，List<String>就会比raw List在开发时提供更多的信息。
+2. 更好地抽象和设计软件系统/文档
+
+    > More abstract thinking about interfaces generally leads to better design.
+
+3. 提高软件运行效率（编译优化等）
+
+
+[1]: https://www.cis.upenn.edu/~bcpierce/tapl/
