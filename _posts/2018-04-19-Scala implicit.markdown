@@ -58,7 +58,7 @@ object FetchOps {
 ```scala
 class FetchSpec extends FlatSpec with Matchers {
     "A url query" should "return a Document" in {
-        import scorer.datasource.FetchOps._
+        import FetchOps._
         implicit val urlQuery: Fetch[String, Document] = Fetch.create(url => Jsoup.connect(url).get())
         "https://www.google.com".fetch shouldBe a [Document]
     }
