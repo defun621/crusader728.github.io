@@ -11,23 +11,23 @@ categories: Scala
 Scala编译器是按照怎样的规则来寻找一个可以应用的隐式转换方法呢？在"Programming in Scala"中是这么描述的：
 
 > Implicit conversions are governed by the following general rules:
-    1. Marking Rule: Only definitions marked implicit are available. 
-    2. Scope Rule: An inserted implicit conversion must be in scope as a single identifier, or be associated with the source or target type of the conversion.
-    3. Non-Ambiguity Rule: An implicit conversion is only inserted if there is no other possible conversion to insert.
-    4. One-at-a-time Rule: Only one implicit is tried. 
-    5. Explicits-First Rule: Whenever code type checks as it is written, no implicits are attempted.
+    1. Marking Rule: 只会去寻找带有implicit标记的方法。
+    2. Scope Rule: 在一个作用域内，一个隐式转换必须是一个唯一的标识。一般的惯例，会将隐式转换方法封装在伴生对象中。
+    3. Non-Ambiguity Rule: 只能有一个相应的隐式转换方法。
+    4. One-at-a-time Rule: 只进行一次隐式转换。
+    5. Explicits-First Rule: 显示优先。如果现有代码已经满足type check，则不会进行隐式转换。
 
 
 举例来说，现在在我写的简单Scala代码中，我想通过Jsoup库拿到一个URL所对应的页面，即：
 
-```Scala
+```scala
 "http://www.google.com".fetch
 ```
 
 然而，很明显String类并没有fetch方法。
 我们先要提供一个Fetch的trait(定义typeclass的行为)
 
-```Scala
+```scala
 trait Fetch[-A, +B] {
   def fetch(source: A): B
 }
@@ -39,7 +39,7 @@ object Fetch {
 为了方便使用，我们在Fetch typeclass里定义了构造函数。
 下一步是注入fetch方法：
 
-```Scala
+```scala
 class FetchOps[-A, +B](a: A)(implicit ev: Fetch[A, B]) {
   def fetch: B = ev.fetch(a)
 }
@@ -47,7 +47,7 @@ class FetchOps[-A, +B](a: A)(implicit ev: Fetch[A, B]) {
 
 然后加上implicit resolution:
 
-```Scala
+```scala
 object FetchOps {
   implicit def toFetchOps[A, B](a: A)(implicit ev: Fetch[A,B]): FetchOps[A, B] = new FetchOps[A,B](a)
 }
@@ -55,7 +55,7 @@ object FetchOps {
 
 最后再定义一个String上的默认隐式转换，就完成了。用ScalaTest来写个test case
 
-```Scala
+```scala
 class FetchSpec extends FlatSpec with Matchers {
     "A url query" should "return a Document" in {
         import scorer.datasource.FetchOps._
