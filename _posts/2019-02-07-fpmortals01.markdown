@@ -2,7 +2,7 @@
 layout: post
 title:  FP for mortals 读书笔记（1）
 date:   2019-02-07 22:42:30 -0700
-categories: Scala
+categories: Tech
 ---
 # Abstracting over Execution
 可以用 higher kinded types (HKT) 来表达Execution Context。
