@@ -1,0 +1,44 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（1）
+date:   2019-02-07 22:42:30 -0700
+categories: Scala
+---
+# Abstracting over Execution
+可以用 higher kinded types (HKT) 来表达Execution Context。
+if we write methods that operate on monadic types, then we can write sequential code that abstracts over its execution context。
+
+# Pure Functional Programming
+Pure functions have three properties:
+• Total: return a value for every possible input
+• Deterministic: return the same value for the same input
+• Inculpable: no (direct) interaction with the world or program state.
+
+与之相反的则是side effects: 例如directly accessing or changing mutable state (e.g. maintaining a var in a class or using a legacy API that is impure), communicating
+with external resources (e.g. files or network lookup), or throwing and catching exceptions
+
+An expression is referentially transparent if it can be replaced with its corresponding value without changing the program’s behaviour.
+Pure functions are referentially transparent, allowing for a great deal of code reuse, performance optimisation, understanding, and control of a program.
+Impure functions are not referentially transparent.
+
+# For Comprehensions
+a simple rewrite rule： that every <- (called a generator) is a nested flatMap call, with the final generator a map containing the yield body.
+We can assign values inline. Unfortunately we cannot assign before any generators.
+It is possible to put if statements after a generator to filter values by a predicate.
+Finally, if there is no yield, the compiler will use foreach instead of flatMap, which is only useful for side-effects.
+
+***inline Future calculations in a for comprehension do not run in parallel*** for comprehensions are fundamentally for defining sequential programs.
+
+for comprehensions cannot express resource cleanup: there is no way to try / finally. 
+
+The context we’re comprehending over must stay the same: we cannot mix contexts. Hiding the outer context is exactly what a monad transformer does. 
+
+# Interfaces / Algebras
+In FP, an algebra takes the place of an interface in Java, or the set of valid messages for an Actor in Akka. This is the layer where we define all side-effecting interactions of our system.
+
+We can write the interface for the business logic and implement it with a module. A module depends only on other modules, algebras and pure functions, and can be abstracted over F.
+If an implementation of an algebraic interface is tied to a specific type, e.g. IO, it is called an interpreter. Using a single capital letter name is a common naming convention for monad and algebra implementations.
+
+Concrete functions don’t need test interpreters, they have explicit inputs and outputs, so we could move all pure code into standalone methods on a stateless object, testable in isolation.
+
+We could write the scenario detectors as extractors which is nothing more than an expressive way of writing if / else conditions.
