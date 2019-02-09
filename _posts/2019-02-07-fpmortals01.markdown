@@ -6,13 +6,14 @@ categories: Tech
 ---
 # Abstracting over Execution
 可以用 higher kinded types (HKT) 来表达Execution Context。
+
 if we write methods that operate on monadic types, then we can write sequential code that abstracts over its execution context。
 
 # Pure Functional Programming
 Pure functions have three properties:
-• Total: return a value for every possible input
-• Deterministic: return the same value for the same input
-• Inculpable: no (direct) interaction with the world or program state.
++ Total: return a value for every possible input
++ Deterministic: return the same value for the same input
++ Inculpable: no (direct) interaction with the world or program state.
 
 与之相反的则是side effects: 例如directly accessing or changing mutable state (e.g. maintaining a var in a class or using a legacy API that is impure), communicating
 with external resources (e.g. files or network lookup), or throwing and catching exceptions

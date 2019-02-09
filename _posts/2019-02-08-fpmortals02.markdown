@@ -1,0 +1,42 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（2）
+date:   2019-02-08 21:54:30 -0700
+categories: Tech
+---
+# Application Design
+FP approach to writing applications is to delegate writing the implementations of algebras to team members while focusing on making business logic meet the requirements.
+
+In UT, FP mocking is equivalent to providing an alternative implementation of dependency algebras.
+
+1. algebras define the interface between systems.
+2. modules are implementations of an algebra in terms of other algebras.
+3. interpreters are concrete implementations of an algebra for a fixed F\[_\].
+4. Test interpreters can replace the side-effecting parts of the system, giving a high amount of test coverage.
+
+# ADT
+The fundamental building blocks of data types are:
++ final case class also known as products (product contains every type that it is composed of)
++ sealed abstract class also known as coproducts (a coproduct can be only one of the type)
++ case object and Int, Double, String (etc) values
+
+prefer abstract class to trait in order to get better binary compatibility and to discourage trait mixing. The collective name for products, coproducts and values is Algebraic Data Type (ADT).
+
+ADTs can contain pure functions. But ADTs that contain functions come with some caveats as they don’t translate perfectly onto the JVM. For example, Serializable and Throwable.
+
+It is important that we use sealed abstract class, not just abstract class, when defining a data type, which allows the compiler to know about them in pattern match exhaustivity checks and in macros that eliminate boilerplate. 
+To remain safe, don’t use guards on sealed types.
+
+Besides being a container for necessary business information, data types can be used to encode constraints. *** Scalaz refined *** library.
+
+## ADT Complexity
+The complexity of a data type is the count of values that can exist. A good data type has the least amount of complexity it needs to hold the information it conveys, and no more.
++ To find the complexity of a product, we multiply the complexity of each part.
++ To find the complexity of a coproduct, we add the complexity of each part.
++ find the complexity of a ADT with a type parameter, multiply each part by the complexity of the type parameter.
+
+Minimising the complexity of inputs and outputs is the best way to achieve totality. *** it is a sign of a badly designed function when the complexity of a function’s return value is larger than the product of its inputs.***
+
+The complexity of a total function is the number of possible functions that can satisfy the type signature: the output to the power of the input.
+
+***Prefer Coproduct over Product***
