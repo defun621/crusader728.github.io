@@ -1,0 +1,77 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（3）
+date:   2019-02-11 02:04:30 -0700
+categories: Tech
+---
+# Functionality
+Pure functions are typically defined as methods on an object.
+
+**To put methods on a trait, requiring users to mix it with the cake pattern is not encouraged.** It leaks internal implementation detail to public APIs, bloats bytecode, makes binary compatibility basically impossible, and confuses IDE autocompleters.
+
+Use implicit class instead.
+
+## typeclasses
+A typeclass is a trait that:
++ holds no state
++ has a type parameter
++ has at least one abstract method (primitive combinators)
++ may contain generalised methods (derived combinators)
++ may extend other typeclasses
+
+There can only be one implementation of a typeclass for any given type parameter, a property known as __typeclass coherence__. 
+Typeclass coherence is 
++ primarily about consistency, and the consistency gives us the confidence to use implicit parameters. 
++ Additionally, typeclass coherence allows us to globally cache implicits at runtime and save memory allocations, gaining performance improvements from reduced pressure on the garbage collector.
+
+With typeclass, We are no longer dependent on the OOP hierarchy of our input types, we don’t demand that our input __“is a”__, but instead we require type __“have a”__ typeclass.
+
+https://github.com/mpilquist/simulacrum provides a @typeclass macro annotation that automatically generates the apply and ops.
+
+### context bound
+A context bound requires a parameterized type, such as Ordered\[A\], but unlike String. A context bound describes an implicit value. It is used to declare that for some type A, there is an implicit value of type B\[A\] available. The syntax goes like this:
+
+```scala
+def f[A : ClassTag](n: Int) = new Array[A](n)
+```
+
+## instances
+Instances of typeclass are defined as an implicit val that extends the typeclass, and can provide optimised implementations for the generalised methods
+
+## implicit
++ implicit parameters
+Implicit parameters are when a method requests that a unique instance of a particular type is in the implicit scope of the caller, with special syntax for typeclass instances.
+
++ Implicit conversion is when an implicit def exists.
+    + When the compiler is resolving a call to a method, it 
+        1. first checks if the method exists on the type, 
+        2. then its ancestors (Java-like rules). 
+        3. If it fails to find a match, it will search the implicit scope for conversions to other types, 
+        4. then search for methods on those types.
+    + Another use for implicit conversions is typeclass derivation.
+
++ implicit resolution
+    1. First, the normal variable scope is searched for implicits, in order:
+        1. local scope, including scoped imports (e.g. the block or method)
+        2. outer scope, including scoped imports (e.g. members in the class)
+        3. ancestors (e.g. members in the super class)
+        4. the current package object
+        5. ancestor package objects (when using nested packages)
+        6. the file’s imports
+    2. If that fails to find a match, search in order:
+        1. implicit instances inside a type’s companion,
+        2. its package object
+        3. outer objects (if nested),
+        4. and then repeated for ancestors. 
+        Note: This is performed, in order,
+        1. given parameter type
+        2. expected parameter type
+        3. type parameter (if there is one)
+
+Implicits are often defined on a trait, which is then extended by an object.
+
+__rule of thumbs__: prefer implicit val over implicit object despite the temptation of less typing.
+
++ common pitfalls
+    + Implicit resolution falls short when there is a hierarchy of typeclasses
+    + Implicit resolution is particularly hit-or-miss if type aliases are used
