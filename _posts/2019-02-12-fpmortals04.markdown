@@ -60,7 +60,8 @@ object Ordering {
 __Notes__
 When a typeclass implements a parent’s primitive combinator with a derived combinator, an implied law of substitution for the typeclass is added, which means that it must __behave identically the same__ as the original.
 
-```Scala
+Things that have an order may also be discrete, allowing us to walk successors and predecessors
+```scala
 @typeclass trait Enum[F] extends Order[F] {
   def succ(a: F): F
   def pred(a: F): F
