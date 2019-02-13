@@ -1,0 +1,76 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（4）
+date:   2019-02-12 23:22:30 -0700
+categories: Tech
+---
+# Scalaz typeclasses
+## Appendable
+```scala
+@typeclass trait Semigroup[A] {
+  @op("|+|") def append(x: A, y: =>A): A
+  def multiply1(value: F, n: Int): F = ???
+}
+
+@typeclass trait Monoid[A] extends Semigroup[A] {
+  def zero: A
+  def multiply(value: F, n: Int): F = if (n <= 0) zero else multiply1(value, n - 1)
+}
+
+@typeclass trait Band[A] extends Semigroup[A]
+```
+
++ A Semigroup can be defined for a type if two values can be combined, The operation must be associative
++ A Monoid is a Semigroup with a zero element
++ Band has the law that the append operation of the same two elements is idempotent
+  + Examples are anything that can only be one value, such as Unit, least upper bounds, or a Set.
+
+**Notes**
++ if the business requirement was different other than the default implementation of Monoid, we can provide a custom Monoid instance for a specific type 
+
+## Objecty Things
+in FP we prefer typeclasses for polymorphic functionality and even the concept of equality is captured at compiletime.
+```scala
+@typeclass trait Equal[F] {
+  @op("===") def equal(a1: F, a2: F): Boolean
+  @op("/==") def notEqual(a1: F, a2: F): Boolean = !equal(a1, a2)
+}
+```
+By throwing away the universal concept of Object.equals we __don’t__ take equality for granted when we construct an ADT.
+
+```scala
+@typeclass trait Order[F] extends Equal[F] {
+  @op("?|?") def order(x: F, y: F): Ordering
+  override def equal(x: F, y: F): Boolean = order(x, y) == Ordering.EQ
+  @op("<" ) def lt(x: F, y: F): Boolean = ...
+  @op("<=") def lte(x: F, y: F): Boolean = ...
+  @op(">" ) def gt(x: F, y: F): Boolean = ...
+  @op(">=") def gte(x: F, y: F): Boolean = ...
+  def max(x: F, y: F): F = ...
+  def min(x: F, y: F): F = ...
+  def sort(x: F, y: F): (F, F) = ...
+}
+sealed abstract class Ordering
+object Ordering {
+  case object LT extends Ordering
+  case object EQ extends Ordering
+  case object GT extends Ordering
+}
+```
+__Notes__
+When a typeclass implements a parent’s primitive combinator with a derived combinator, an implied law of substitution for the typeclass is added, which means that it must __behave identically the same__ as the original.
+
+```Scala
+@typeclass trait Enum[F] extends Order[F] {
+  def succ(a: F): F
+  def pred(a: F): F
+  def min: Option[F]
+  def max: Option[F]
+  @op("-+-") def succn(n: Int, a: F): F = ...
+  @op("---") def predn(n: Int, a: F): F = ...
+  @op("|->" ) def fromToL(from: F, to: F): List[F] = ...
+  @op("|-->") def fromStepToL(from: F, step: Int, to: F): List[F] = ...
+  @op("|=>" ) def fromTo(from: F, to: F): EphemeralStream[F] = ...
+  @op("|==>") def fromStepTo(from: F, step: Int, to: F): EphemeralStream[F] = ...
+}
+```
