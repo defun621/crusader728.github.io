@@ -68,6 +68,7 @@ def foldLeft[A, B](fa: F[A], z: B)(f: (B, A) => B): B = ...
     The difference between foldl and foldr should be clear from looking at where the parentheses and the “empty list” elements show up. With foldl, the empty list element is on the left, and all the parentheses group to the left. With foldr, the zero value is on the right, and the parentheses group to the right.
 
   + understanding foldl in terms of foldr
+  
     In [chapter 4 of Real World Haskell](http://book.realworldhaskell.org/read/functional-programming.html), there is a diffcult challenge: express foldl using foldr.
     This [SO question and answer](https://stackoverflow.com/a/6172270) gives clear explanation.
 
