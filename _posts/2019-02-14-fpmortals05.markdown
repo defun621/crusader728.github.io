@@ -1,0 +1,75 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（5）
+date:   2019-02-14 21:32:30 -0700
+categories: Tech
+---
+# Typeclasses
+## Mappable
+```scala
+@typeclass trait Functor[F[_]] {
+  def map[A, B](fa: F[A])(f: A => B): F[B]
+}
+```
+function __map__ 
++ must compose, i.e. mapping with _f_ and then again with _g_ is the same as mapping once with the composition of _f_ and _g_
++ should also perform a no-op if the provided function is identity
+
+some convenience methods around map
++ ```scala
+  def void[A](fa: F[A]): F[Unit]
+  ```
+  forgets all the values whilst preserving the structure.
++ ```scala
+  def fproduct[A, B](fa: F[A])(f: A => B): F[(A, B)]
+  ```
+  takes the same input as map but returns F\[(A, B)\], i.e. it tuples the contents with the result of applying the function. This is useful when we wish to retain the input.
++ ```scala
+  def fpair[A](fa: F[A]): F[(A, A)]
+  ```
+  fpair twins all the elements of A into a tuple
++ ```scala
+  def strengthL[A, B](a: A, f: F[B]): F[(A, B)]
+  def strengthR[A, B](f: F[A], b: B): F[(A, B)]
+  ```
+  pairs the contents with with a constant
++ ```scala
+  def lift[A, B](f: A => B): F[A] => F[B]
+  ```
+  takes a function over the contents of an F\[A\] and returns a function that operates on the F\[A\] directly.
++ ```scala
+  def mapply[A, B](a: A)(f: F[A => B]): F[B]
+  ```
+
+## Foldable
+__Foldable__ is for data structures that can be walked to produce a summary value. An instance of Foldable need only implement foldMap and foldRight to get all of the functionality in this typeclass
+```scala
+@typeclass trait Foldable[F[_]] {
+def foldMap[A, B: Monoid](fa: F[A])(f: A => B): B
+def foldRight[A, B](fa: F[A], z: =>B)(f: (A, =>B) => B): B
+def foldLeft[A, B](fa: F[A], z: B)(f: (B, A) => B): B = ...
+```
++ in foldMap There is no enforced operation order, allowing for parallel computation. Given an F\[A\], a function from A to B, and a way to combine B (provided by the Monoid, along with a zero B), we can produce a summary value of type B.
++ foldRight
+  + The order for traversing the elements is from right to left and therefore it cannot be parallelised.
+  + byname parameter for the aggregate value fix the stackoverflow problem when data structures are very large
++ foldLeft
+  + it is usually implemented with tail recursion
++ side note:
+  + In Haskell, 
+    foldl has signature 
+    ```haskell
+    foldl::(a->b->a)->a->[b]->b
+    ```
+    while, foldr has signature
+    ```haskell
+    foldr::(b->a->b)->a->[b]->b
+    ```
+    The difference between foldl and foldr should be clear from looking at where the parentheses and the “empty list” elements show up. With foldl, the empty list element is on the left, and all the parentheses group to the left. With foldr, the zero value is on the right, and the parentheses group to the right.
+
+  + understanding foldl in terms of foldr
+    In [chapter 4 of Real World Haskell](http://book.realworldhaskell.org/read/functional-programming.html), there is a diffcult challenge: express foldl using foldr.
+    This [SO question and answer](https://stackoverflow.com/a/6172270) gives clear explanation.
+
++ The only law for Foldable is that foldLeft and foldRight should each be consistent with foldMap for monoidal operations
++ anything we’d expect to find in a collection library is probably on Foldable and if it isn’t already, it probably should be.
