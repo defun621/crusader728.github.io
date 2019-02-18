@@ -1,0 +1,87 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（6）
+date:   2019-02-18 00:32:30 -0700
+categories: Tech
+---
+#typeclasses
+## Mappable
+### Traverse
+Traverse is what happens when we cross a Functor with a Foldable
+```scala
+trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
+  ...
+}
+```
++ 
+    sequence is for swapping around type constructors to fit a requirement
+    ```scala
+    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
+    def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = ...
+    ```
+
++ 
+    We can also zip together two things that have a Traverse, getting back None when one side runs out of elements, using zipL or zipR to decide which side to truncate when the lengths don’t match. A special case of zip is to add an index to every entry with indexed.
+    ```scala
+    def zipL[A, B](fa: F[A], fb: F[B]): F[(A, Option[B])] = ...
+    def zipR[A, B](fa: F[A], fb: F[B]): F[(Option[A], B)] = ...
+    def indexed[A](fa: F[A]): F[(Int, A)] = ...
+    def zipWithL[A, B, C](fa: F[A], fb: F[B])(f: (A, Option[B]) => C): F[C] = ...
+    def zipWithR[A, B, C](fa: F[A], fb: F[B])(f: (Option[A], B) => C): F[C] = ...
+    ```
+
++ 
+    mapAccumL and mapAccumR are regular map combined with an accumulator. If we find our old Java ways make us want to reach for a var, and refer to it from a map, we should be using mapAccumL.
+    ```scala
+    def mapAccumL[S, A, B](fa: F[A], z: S)(f: (S, A) => (S, B)): (S, F[B]) = ...
+    def mapAccumR[S, A, B](fa: F[A], z: S)(f: (S, A) => (S, B)): (S, F[B]) = ...
+    ```
+
+### Align
+Before looking at Align, meet the \\&/ data type. it is a data encoding of inclusive logical OR. A or B or both A and B.
+```scala
+sealed abstract class \&/[+A, +B]
+final case class This[A](aa: A) extends (A \&/ Nothing)
+final case class That[B](bb: B) extends (Nothing \&/ B)
+final case class Both[A, B](aa: A, bb: B) extends (A \&/ B)
+```
+
+Align is about merging and padding anything with a Functor. 
+```scala
+@typeclass trait Align[F[_]] extends Functor[F] {
+  ...
+}
+```
+
++ 
+    alignWith takes a function from either an A or a B (or both) to a C and returns a lifted function from a tuple of F\[A\] and F\[B\] to an F\[C\]. align constructs a \\&/ out of two F\[\_\].
+    ```scala
+    def alignWith[A, B, C](f: A \&/ B => C): (F[A], F[B]) => F[C]
+    def align[A, B](a: F[A], b: F[B]): F[A \&/ B] = ...
+    ```
++ 
+    merge allows us to combine two F\[A\] when A has a Semigroup.
+    ```scala
+    def merge[A: Semigroup](a1: F[A], a2: F[A]): F[A] = ...
+    ```
++ 
+    .pad and .padWith are for partially merging two data structures that might be missing values on one side.
+    ```scala
+    def pad[A, B]: (F[A], F[B]) => F[(Option[A], Option[B])] = ...
+    def padWith[A, B, C](f: (Option[A], Option[B]) => C): (F[A], F[B]) => F[C] = ...
+    ```
+
+## Variance
+InvariantFunctor, also known as the exponential functor, has a method xmap which says that given a function from A to B, and a function from B to A, then we can convert F\[A\] to F\[B\].
+
+Functor implements xmap with map and ignores the function from B to A.
+
+Contravariant, on the other hand, implements xmap with contramap and ignores the function from A to B.
+
+__Note__:
+the words covariant, contravariant and invariant do not directly refer to Scala type variance. 
+
++ 
+    .map may be understand by its contract “if you give me an F of A and a way to turn an A into a B, then I can give you an F of B”.
++ 
+    Likewise, .contramap reads as “if you give me an F of A and a way to turn a B into a A, then I can give you an F of B”.
