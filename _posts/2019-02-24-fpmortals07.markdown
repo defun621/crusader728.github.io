@@ -1,0 +1,91 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（7）
+date:   2019-02-24 22:54:30 -0700
+categories: Programming Scala fpformortals
+---
+# Scalaz typeclasses
+## Apply and Bind
+### Apply
+Apply extends Functor by adding a method named _ap_ which is similar to map in that it applies a function to values. 
+However, with _ap_, the function is in the same context as the values.
+
+```scala
+@typeclass trait Apply[F[_]] extends Functor[F] {
+  @op("<*>") def ap[A, B](fa: =>F[A])(f: =>F[A => B]): F[B]
+  ...
+```
+
+The extraction of the function from the context is the important power that Apply brings, allowing multiple function to be combined inside the context.
+
+```scala
+  def apply2[A,B,C](fa: =>F[A], fb: =>F[B])(f: (A, B) => C): F[C] = ...
+```
+
+There are many uses for this contract _apply2_ and the two most important are:
++ 
+  constructing some typeclasses for a product type C from its constituents A and B
++ 
+  performing effects in parallel, and then combining their results.
+
+Useful syntaxs:
++ 
+  ```scala
+  |@|
+  ```
++ 
+  ```scala
+  <* //left bird
+  *> //right bird
+  ```
+  a convenient way to ignore the output from one of two parallel effects.
++ 
+  ```scala
+  def ^[F[_]: Apply,A,B,C](fa: =>F[A],fb: =>F[B])(f: (A,B) =>C): F[C] = ...
+  def ^^[F[_]: Apply,A,B,C,D](fa: =>F[A],fb: =>F[B],fc: =>F[C])(f: (A,B,C) =>D): F[D] = ...
+  ...
+  def ^^^^^^[F[_]: Apply, ...]
+  ```
+  _lifting with arity_ syntax, which does not produce any intermediate objects
+
+### Bind
+_.bind_, synonymous with _.flatMap_, which allows 
++ 
+  functions over the result of an effect to return a new effect
++ 
+  or functions over the values of a data structure to return new data structures that are then joined.
+
+```scala
+@typeclass trait Bind[F[_]] extends Apply[F] {
+  @op(">>=") def bind[A, B](fa: F[A])(f: A => F[B]): F[B]
+  def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B] = bind(fa)(f)
+  def join[A](ffa: F[F[A]]): F[A] = bind(ffa)(identity)
+```
+
+## Applicative and Monad
+__Applicative__ is __Apply__ with a _pure_ method, and __Monad__ extends __Applicative__ with __Bind__.
+```scala
+@typeclass trait Applicative[F[_]] extends Apply[F] {
+  def point[A](a: =>A): F[A]
+  def pure[A](a: =>A): F[A] = point(a)
+}
+@typeclass trait Monad[F[_]] extends Applicative[F] with Bind[F]
+```
+
+### __Applicative Law__
+
+1. Identity: fa <*> pure(identity) === fa, (where fa is an F\[A\]) i.e. applying pure(identity) does nothing.
+
+2. Homomorphism: pure(a) <*> pure(ab) === pure(ab(a)) (where ab is an A => B), i.e. applying a pure function to a pure value is the same as applying the function to the value and then using pure on the result.
+
+3. Interchange: pure(a) <*> fab === fab <*> pure(f => f(a)), (where fab is an F\[A =>B\]), i.e. pure is a left and right identity
+
+4. Mappy: map(fa)(f) === fa <*> pure(f)
+
+### __Monad Law__
+
+Monad adds additional laws:
+
+1. Left Identity: pure(a).bind(f) === f(a)
+2. Right Identity: a.bind(pure(_)) === a
+3. Associativity: fa.bind(f).bind(g) === fa.bind(a => f(a).bind(g)) where fa is an F\[A\], f is an A => F\[B\] and g is a B => F\[C\].
