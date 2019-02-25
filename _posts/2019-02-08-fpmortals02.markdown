@@ -2,7 +2,7 @@
 layout: post
 title:  FP for mortals 读书笔记（2）
 date:   2019-02-08 21:54:30 -0700
-categories: Tech
+categories: Programming Scala fpformortals
 ---
 # Application Design
 FP approach to writing applications is to delegate writing the implementations of algebras to team members while focusing on making business logic meet the requirements.

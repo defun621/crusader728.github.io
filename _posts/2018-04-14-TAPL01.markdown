@@ -2,7 +2,7 @@
 layout: post
 title:  TAPL学习笔记(1)： 类型系统定义
 date:   2018-04-14 22:47:30 -0700
-categories: Tech
+categories: Programming
 ---
 
 > 学习材料： [Types and Programming Lanaguages][1]

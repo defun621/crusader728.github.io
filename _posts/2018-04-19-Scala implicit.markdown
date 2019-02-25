@@ -2,7 +2,7 @@
 layout: post
 title:  Scala中的implicit
 date:   2018-04-19 01:05:30 -0700
-categories: Tech
+categories: Programming
 ---
 最近在公司里和自己业余的时候重新上手Scala，在这里记录下来自己在写的时候学到的东西。之前虽然有Chris指路，但是我只是浅尝则止罢了。希望今次可以走得远一点，学得深一点。
 
