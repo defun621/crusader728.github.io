@@ -89,3 +89,25 @@ Monad adds additional laws:
 1. Left Identity: pure(a).bind(f) === f(a)
 2. Right Identity: a.bind(pure(_)) === a
 3. Associativity: fa.bind(f).bind(g) === fa.bind(a => f(a).bind(g)) where fa is an F\[A\], f is an A => F\[B\] and g is a B => F\[C\].
+
+## Divide and Conquer
+Divide is the Contravariant analogue of Apply.
+```scala
+@typeclass trait Divide[F[_]] extends Contravariant[F] {
+  def divide[A, B, C](fa: F[A], fb: F[B])(f: C => (A, B)): F[C] = divide2(fa, fb)(f)
+  def divide1[A1, Z](a1: F[A1])(f: Z => A1): F[Z] = ...
+  def divide2[A, B, C](fa: F[A], fb: F[B])(f: C => (A, B)): F[C] = ...
+  ...
+  def divide22[...] = ...
+```
+
+a great way to generate contravariant typeclass instances for product types by breaking the products into their parts.
+
+Divisible is the Contravariant analogue of Applicative and introduces _.conquer_, the equivalent of _.pure_
+```scala
+@typeclass trait Divisible[F[_]] extends Divide[F] {
+  def conquer[A]: F[A]
+}
+```
+
+.conquer allows creating trivial implementations where the type parameter is ignored.
