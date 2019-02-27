@@ -2,7 +2,10 @@
 layout: post
 title:  FP for mortals 读书笔记（3）
 date:   2019-02-11 02:04:30 -0700
-categories: Programming Scala fpformortals
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
 ---
 # Functionality
 Pure functions are typically defined as methods on an object.

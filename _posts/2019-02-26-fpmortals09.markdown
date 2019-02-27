@@ -1,0 +1,118 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（9）
+date:   2019-02-26 21:17:30 -0700
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
+---
+# Data types
+## Evaluation
++ Strict evaluation
+    all the parameters to a method must be evaluated to a value before the method is called
+
++ call by name
+    ```scala
+    a:=>A
+    ```
+
++ by-need evaluation
+    with the lazy keyword: the computation is evaluated at most once to produce the value
+
+Unfortunately, Scala does not support by-need evaluation of method parameters.
+
+three evaluation strategies with an ADT in Scalaz
++ The weakest form of evaluation is Name, giving no computational guarantees. 
+
++ Need, guaranteeing at most once evaluation
+
++ Value is pre-computed and therefore exactly once evaluation.
+```scala
+sealed abstract class Name[A] {
+  def value: A
+}
+object Name {
+  def apply[A](a: =>A) = new Name[A] { def value = a }
+  ...
+}
+sealed abstract class Need[A] extends Name[A]
+
+object Need {
+  def apply[A](a: =>A): Need[A] = new Need[A] {
+    private lazy val value0: A = a
+    def value = value0
+  }
+  ...
+}
+final case class Value[A](value: A) extends Need[A]
+```
+
+## Memoisation
+```scala
+sealed abstract class Memo[K, V] {
+  def apply(z: K => V): K => V
+}
+object Memo {
+  def memo[K, V](f: (K => V) => K => V): Memo[K, V]
+  def nilMemo[K, V]: Memo[K, V] = memo[K, V](identity)
+  def arrayMemo[V >: Null : ClassTag](n: Int): Memo[Int, V] = ...
+  def doubleArrayMemo(n: Int, sentinel: Double = 0.0): Memo[Int, Double] = ...
+  def immutableHashMapMemo[K, V]: Memo[K, V] = ...
+  def immutableTreeMapMemo[K: scala.Ordering, V]: Memo[K, V] = ...
+}
+```
++ memo allows us to create custom implementations of Memo
+
++ nilMemo doesn’t memoise, evaluating the function normally. 
+
++ The remaining implementations intercept calls to the function and cache results backed by stdlib collection implementations.
+
+Example
+```scala
+scala> def foo(n: Int): String = {
+  println("running")
+  if (n > 10) "wibble" else "wobble"
+}
+scala> val mem = Memo.arrayMemo[String](100)
+val mfoo = mem(foo)
+scala> mfoo(1)
+running // evaluated
+res: String = wobble
+scala> mfoo(1)
+res: String = wobble // memoised
+```
+
+__Note__:
+If the function takes more than one parameter, we must tupled the method, with the memoised version taking a tuple.
+
+## Tagging
+often we find that a data type can implement a fundamental typeclass in multiple valid ways and that the default implementation doesn’t do what we want, or simply isn’t defined.
+scalaz.Tag is designed to address the multiple typeclass implementation problem without breaking typeclass coherency.
+
+[This blog has clear explanation](https://kubuszok.com/2017/tagged-or-anyval/)
+
+Some useful tags are provided in the Tags object
+```scala
+object Tags {
+  sealed trait First
+  val First = Tag.of[First]
+  sealed trait Last
+  val Last = Tag.of[Last]
+  sealed trait Multiplication
+  val Multiplication = Tag.of[Multiplication]
+  sealed trait Disjunction
+  val Disjunction = Tag.of[Disjunction]
+  sealed trait Conjunction
+  val Conjunction = Tag.of[Conjunction]
+  ...
+}
+```
+
+__Note__:
+It is tempting to use Tag to markup data types for some form of validation (e.g. String @@ PersonName), but this should be __avoided__ because there are no checks on the content of the runtime value. 
+
+Tag should only be used for typeclass selection purposes. 
+
+Prefer the Refined library
+

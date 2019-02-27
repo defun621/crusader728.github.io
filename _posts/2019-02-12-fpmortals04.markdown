@@ -2,7 +2,10 @@
 layout: post
 title:  FP for mortals 读书笔记（4）
 date:   2019-02-12 23:22:30 -0700
-categories: Programming Scala fpformortals
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
 ---
 # Scalaz typeclasses
 ## Appendable
