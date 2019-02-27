@@ -110,6 +110,7 @@ object Tags {
 ```
 
 __Note__:
+
 It is tempting to use Tag to markup data types for some form of validation (e.g. String @@ PersonName), but this should be __avoided__ because there are no checks on the content of the runtime value. 
 
 Tag should only be used for typeclass selection purposes. 
