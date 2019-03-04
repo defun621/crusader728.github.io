@@ -29,25 +29,25 @@ three evaluation strategies with an ADT in Scalaz
 
 + Value is pre-computed and therefore exactly once evaluation.
 
-```scala
-sealed abstract class Name[A] {
-  def value: A
-}
-object Name {
-  def apply[A](a: =>A) = new Name[A] { def value = a }
-  ...
-}
-sealed abstract class Need[A] extends Name[A]
-
-object Need {
-  def apply[A](a: =>A): Need[A] = new Need[A] {
-    private lazy val value0: A = a
-    def value = value0
+  ```scala
+  sealed abstract class Name[A] {
+    def value: A
   }
-  ...
-}
-final case class Value[A](value: A) extends Need[A]
-```
+  object Name {
+    def apply[A](a: =>A) = new Name[A] { def value = a }
+    ...
+  }
+  sealed abstract class Need[A] extends Name[A]
+
+  object Need {
+    def apply[A](a: =>A): Need[A] = new Need[A] {
+      private lazy val value0: A = a
+      def value = value0
+    }
+    ...
+  }
+  final case class Value[A](value: A) extends Need[A]
+  ```
 
 ## Memoisation
 
