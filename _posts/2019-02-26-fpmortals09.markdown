@@ -49,6 +49,7 @@ final case class Value[A](value: A) extends Need[A]
 ```
 
 ## Memoisation
+
 ```scala
 sealed abstract class Memo[K, V] {
   def apply(z: K => V): K => V
@@ -69,6 +70,7 @@ object Memo {
 + The remaining implementations intercept calls to the function and cache results backed by stdlib collection implementations.
 
 Example
+
 ```scala
 scala> def foo(n: Int): String = {
   println("running")
@@ -93,6 +95,7 @@ scalaz.Tag is designed to address the multiple typeclass implementation problem 
 [This blog has clear explanation](https://kubuszok.com/2017/tagged-or-anyval/)
 
 Some useful tags are provided in the Tags object
+
 ```scala
 object Tags {
   sealed trait First
