@@ -28,6 +28,7 @@ three evaluation strategies with an ADT in Scalaz
 + Need, guaranteeing at most once evaluation
 
 + Value is pre-computed and therefore exactly once evaluation.
+
 ```scala
 sealed abstract class Name[A] {
   def value: A
