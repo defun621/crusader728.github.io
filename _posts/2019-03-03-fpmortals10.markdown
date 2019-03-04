@@ -1,0 +1,62 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（10）
+date:   2019-03-03 22:39:30 -0700
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
+---
+# Scalaz data types
+
+## Natural Transformations
+
+Scalaz provides similar syntax sugar F ~> G for functions over type constructors F\[\_\]to G\[\_\].
+
+F ~> G are called natural transformations and are universally quantified because they don’t care about the contents of F\[\_\].
+
+```scala
+trait NaturalTransformation[-F[_], +G[_]] {
+  def apply[A](fa: F[A]): G[A]
+  def compose[E[_]](f: E ~> F): E ~> G = ...
+  def andThen[H[_]](f: G ~> H): F ~> H = ...
+}
+```
+
+in day-to-day development, it is far more likely that we will use a natural transformation to map between algebras.
+
+## Isomorphism
+
+Sometimes we have two types that are really the same thing, causing compatibility problems becausethe compiler doesn’t know what we know. This is whenIsomorphismcan help us out.
+
+An isomorphism defines a formal “is equivalent to” relationship between two types.
+
+```scala
+object Isomorphism {
+  trait Iso[Arr[_, _], A, B] {
+    def to: Arr[A, B]
+    def from: Arr[B, A]
+  }
+  type IsoSet[A, B] = Iso[Function1, A, B]
+  type <=>[A, B] = IsoSet[A, B]
+  object IsoSet {
+    def apply[A, B](to: A => B, from: B => A): A <=> B = ...
+  }
+  trait Iso2[Arr[_[_], _[_]], F[_], G[_]] {
+    def to: Arr[F, G]
+    def from: Arr[G, F]
+  }
+  type IsoFunctor[F[_], G[_]] = Iso2[NaturalTransformation, F, G]
+  type <~>[F[_], G[_]] = IsoFunctor[F, G]
+  object IsoFunctor {
+    def apply[F[_], G[_]](to: F ~> G, from: G ~> F): F <~> G = ...
+  }
+  trait Iso3[Arr[_[_, _], _[_, _]], F[_, _], G[_, _]] {
+    def to: Arr[F, G]
+    def from: Arr[G, F]
+  }
+  type IsoBifunctor[F[_, _], G[_, _]] = Iso3[~~>, F, G]
+  type <~~>[F[_, _], G[_, _]] = IsoBifunctor[F, G]
+  ...
+}
+```
