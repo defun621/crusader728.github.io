@@ -1,0 +1,144 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（11）
+date:   2019-03-06 23:39:30 -0700
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
+---
+# data types
+
+## collections
+
+### CorecursiveList
+_Corecursion_ is when we start from a base state and produce subsequent steps deterministically.
+
+A CorecursiveList is a data encoding of EphemeralStream.unfold, offering an alternative to EStream that may perform better in some circumstances
+
+```scala
+sealed abstract class CorecursiveList[A] { 
+  type S 
+  def init: S 
+  def step: S => Maybe[(S, A)] 
+}
+object CorecursiveList {
+  private final case class CorecursiveListImpl[S0, A](
+    init: S0, 
+    step: S0 => Maybe[(S0, A)]
+  ) extends CorecursiveList[A] { type S = S0 }
+  
+  def apply[S, A](init: S)(step: S => Maybe[(S, A)]): CorecursiveList[A] = CorecursiveListImpl(init, step)
+  ...
+}
+```
+CorecursiveList is a good way to codify non-linear recurrence equations
+
+### Dequeue
+A Dequeue is a linked list that 
+
++ allows items to be put onto or retrieved from the front (cons) or the back (snoc) in constant time
++ Removing an element from either end is constant time on average.
+
+```scala
+sealed abstract class Dequeue[A] {
+  def frontMaybe: Maybe[A] 
+  def backMaybe: Maybe[A]
+  def ++(o: Dequeue[A]): Dequeue[A] = ... 
+  def +:(a: A): Dequeue[A] = cons(a) 
+  def :+(a: A): Dequeue[A] = snoc(a) 
+  def cons(a: A): Dequeue[A] = ... 
+  def snoc(a: A): Dequeue[A] = ... 
+  def uncons: Maybe[(A, Dequeue[A])] = ... 
+  def unsnoc: Maybe[(A, Dequeue[A])] = ... 
+  ...
+} 
+private final case class SingletonDequeue[A](single: A) extends Dequeue[A] { ... } 
+private final case class FullDequeue[A](
+  front: NonEmptyList[A], 
+  fsize: Int, 
+  back: NonEmptyList[A], 
+  backSize: Int) extends Dequeue[A] { ... } 
+private final case object EmptyDequeue extends Dequeue[Nothing] { ... }
+object Dequeue {
+  def empty[A]: Dequeue[A] = EmptyDequeue() 
+  def apply[A](as: A*): Dequeue[A] = ... 
+  def fromFoldable[F[_]: Foldable, A](fa: F[A]): Dequeue[A] = ... 
+  ... 
+}
+```
+
+The way it works is that there are two lists, one for the front data and another for the back.
+
+Note that the list holding the back is in reverse order. 
+
++ Reading the snoc(final element)is a simple lookup into back.head. 
++ Adding an element to the end of the Dequeue means adding a new element to the head of the back, and recreating the Full Dequeue wrapper.
++ The frontSize and backSize are used to re-balance the front and back so that they are always approximately the same size.
+
+### DList
+
+Linked lists have poor performance characteristics when large lists are appended together.
+
+The DList (for difference list) is a more efficient solution for this scenario. Instead of performing the calculations at each stage, it is represented as a function IList\[A\] => IList\[A\].
+
+```scala
+final case class DList[A](f: IList[A] => IList[A]) { 
+  def toIList: IList[A] = f(IList.empty) 
+  def ++(as: DList[A]): DList[A] = DList(xs => f(as.f(xs))) 
+  ... 
+} 
+object DList {
+  def fromIList[A](as: IList[A]): DList[A] = DList(xs => as ::: xs) 
+}
+```
+
+### ISet
+ISet is an implementation of a tree of bounded balance, meaning that it is approximately balanced, using the size of each branch to balance a node.
+
+Balancing requires us to classify the scenarios that can occur
+
++ 
+  The first scenario i sthe trivial case, which is when both the left and right are Tip. In fact we will never encounter this scenario from .insert, but we hit it in .delete
+  ```scala
+  case (Tip(), Tip()) => singleton(y)
+  ```
+
++ 
+  The second case is when left is a Bin containing only Tip, we don’t need to balance anything, we just create the obvious connection
+  ```scala
+  case (Bin(lx, Tip(), Tip()), Tip()) => Bin(y, left, Tip())
+  ```
+
++ 
+  left is a Bin containing a Bin in its right
+  ```scala
+  case (Bin(lx, Tip(), Bin(lrx, _, _)), Tip()) => Bin(lrx, singleton(lx), singleton(y))
+  ```
+
++ 
+  The fourth case is the opposite of the third case
+  ```scala
+  case (Bin(lx, ll, Tip()), Tip()) => Bin(lx, ll, singleton(y))
+  ```
+
++ 
+  The fifth case is when we have full trees on both sides of the left and we must use their relative sizes to decide on how to re-balance
+  ```scala
+  case (Bin(lx, ll, lr), Tip()) if (2*ll.size > lr.size) => Bin(lx, ll, Bin(y, lr, Tip()))
+  case (Bin(lx, ll, Bin(lrx, lrl, lrr)), Tip()) => Bin(lrx, Bin(lx, ll, lrl), Bin(y, lrr, Tip()))
+  ```
+
++ 
+  The sixth scenario introduces a tree on the right. When the left is empty we create the obvious connection.  This scenario never arises from .insert because the left is always non-empty:
+  ```scala
+  case (Tip(), r) => Bin(y, Tip(), r)
+  ```
+
++ 
+  The final scenario is when we have non-empty trees on both sides. Unless the left is three times or more the size of the right, we can do the simple thing and create a new Bin
+  ```scala
+  case _ if l.size <= 3 * r.size => Bin(y, l, r)
+  case (Bin(lx, ll, lr), r) if (2*ll.size > lr.size) => Bin(lx, ll, Bin(y, lr, r))
+  case (Bin(lx, ll, Bin(lrx, lrl, lrr)), r) => Bin(lrx, Bin(lx, ll, lrl), Bin(y, lrr, r))
+  ```
