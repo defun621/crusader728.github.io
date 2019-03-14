@@ -109,3 +109,6 @@ object Coyoneda {
 
 Coyo can be a useful utility if we want to .map, and we know that we can convert into a data type that has a Functor
 
+__Note__:
+[Great blog on Free monad by Noel Welsh](https://underscore.io/blog/posts/2015/04/14/free-monads-are-simple.html)
+
