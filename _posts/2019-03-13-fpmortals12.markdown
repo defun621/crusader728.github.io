@@ -1,0 +1,111 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（11）
+date:   2019-03-13 21:42:30 -0700
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
+---
+# Advanced Monad
+
+ problem with Future
+
+ + eagerly schedules work during construction
+
+ + bad from a performance perspective
+
+    + every time .flatMap is called, a closure is submitted to an Executor, resulting in unnecessary thread scheduling and context switching
+
++  eager evaluation and executor submission means that it is impossible to know when a job started, when it finished, or the sub-tasks that were spawned to calculate the final result
+
++ Future.flatMap requires an ExecutionContext to be in implicit scope: users are forced to think about business logic and execution semantics at the same time
+
+## Effects and Side Effects
+
+Wrap side-effecting methods in a Monad that delays execution until it is interpreted at the application’s entrypoint.
+
+The simplest implementation of such a Monad is IO
+
+```scala
+final class IO[A](val interpret: () => A) 
+object IO { 
+  def apply[A](a: =>A): IO[A] = new IO(() => a)
+  
+  implicit val monad: Monad[IO] = new Monad[IO] {
+    def point[A](a: =>A): IO[A] = IO(a) 
+    def bind[A, B](fa: IO[A])(f: A => IO[B]): IO[B] = IO(f(fa.interpret()).interpret()) 
+  }
+}
+```
+
+However, there are two big problems with this simple IO:
++ stack overflow 
+
++ it doesn’t support parallel computations
+
+## Stack Safety
+
+### Free monad
+
+Fundamentally, a monad describes a sequential program where every step depends on the previous one. 
+
+Free is the data structure representation of a Monad and is defined by three members:
+
+```scala
+sealed abstract class Free[S[_], A] { 
+  def mapSuspension[T[_]](f: S ~> T): Free[T, A] = ... 
+  def foldMap[M[_]: Monad](f: S ~> M): M[A] = ... 
+  ... 
+} 
+object Free { 
+  implicit def monad[S[_], A]: Monad[Free[S, A]] = ...
+  private final case class Suspend[S[_], A](a: S[A]) extends Free[S, A] 
+  private final case class Return[S[_], A](a: A) extends Free[S, A] 
+  private final case class Gosub[S[_], A0, B]( a: Free[S, A0], f: A0 => Free[S, B] ) extends Free[S, B] { type A = A0 }
+  def liftF[S[_], A](value: S[A]): Free[S, A] = Suspend(value) ...
+}
+```
+
+where,
+
++ Suspend represents a program that has not yet been interpreted 
+
++ Return is .pure 
+
++ Gosub is .bind
+
+A Free\[S, A\] can be freely generated for any algebra S.
+
+steps:
+
++ creating an ADT with a data type for each element of the algebra, Each data type has the same input parameters as its corresponding element, is parameterised over the return type, and has the same name
+
+  + The ADT defines an Abstract Syntax Tree(AST) because each member is representing a computation in a program.
+
++ we then define _.liftF_ with Free\[Ast, ?\] as the context.Every method simply delegates to Free.liftT to create a Suspend
+
++ When we construct our program, parameterised over a Free, we run it by providing an interpreter (anaturaltransformation Ast ∼> M) to the .foldMap method
+
+### Coyoneda (Functor)
+
+we can freely generate a Functor data structure for any algebra S\[\_\], with Coyoneda
+```scala
+sealed abstract class Coyoneda[F[_], A] { 
+  def run(implicit F: Functor[F]): F[A] = ... 
+  def trans[G[_]](f: F ~> G): Coyoneda[G, A] = ... 
+  ... 
+} 
+object Coyoneda { 
+  implicit def functor[F[_], A]: Functor[Coyoneda[F, A]] = ...
+
+  private final case class Map[F[_], A, B](fa: F[A], f: A => B) extends Coyoneda[F, A] 
+  
+  def apply[F[_], A, B](sa: F[A])(f: A => B) = Map[F, A, B](sa, f) 
+  def lift[F[_], A](sa: F[A]) = Map[F, A, A](sa, identity) 
+  ...
+}
+```
+
+Coyo can be a useful utility if we want to .map, and we know that we can convert into a data type that has a Functor
+
