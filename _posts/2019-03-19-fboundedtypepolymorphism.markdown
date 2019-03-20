@@ -8,7 +8,7 @@ categories:
 ---
 # F-bounded type polymorphism
 
-当我第一次看到别人是向下面代码这样给出Java 中 Functor的定义的时候，我是一脸懵逼的，因为完全不明白在type parameter 里的是什么，为什么要这么写
+当我第一次看到别人是像下面代码这样给出Java 中 Functor的定义的时候，我是一脸懵逼的，因为完全不明白在type parameter 里的是什么，为什么要这么写
 ```java
 interface Functor<T, F extends Functor<?, F>> {
     <R> F map(Function<? extends T, R> f);
@@ -22,7 +22,7 @@ interface Functor<T, F extends Functor<?, F>> {
 
 ## 例子
 
-假设在一个billing系统里有多个payment type，程序员某奇发现在公司的屎山代码里发现有很多类似如下的类定义：
+假设在一个billing系统里有多个payment type，程序员某奇发现在公司的屎山代码里有很多类似如下的类定义：
 ```java
 /* AlipayAccount.java */
 public class AlipayAccount {
