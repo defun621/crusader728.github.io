@@ -120,4 +120,9 @@ public class Alipay extends Account<Paypal> { //Paypal is not within bound
 }
 ```
 
+## 好处都有啥
+安全！
+
+其实不去碰屎山更安全(ε=ε=ε=┏(゜ロ゜;)┛
+
 
