@@ -24,7 +24,7 @@ interface Functor<T, F extends Functor<?, F>> {
 
 假设在一个billing系统里有多个payment type，程序员某奇发现在公司的屎山代码里发现有很多类似如下的类定义：
 ```java
-/* AlipayAccount.class */
+/* AlipayAccount.java */
 public class AlipayAccount {
     public AlipayAccount init() {
         ...
@@ -45,7 +45,7 @@ public class AlipayAccount {
 ```
 
 ```java
-/* PaypalAccount.class */
+/* PaypalAccount.java */
 public class PaypalAccount {
 public PaypalAccount init() {
         ...
@@ -69,7 +69,7 @@ public PaypalAccount init() {
 
 某奇可能会这么去refactor
 ```java
-/* Account.class */
+/* Account.java */
 public interface Account<T> {
     T init();
     T load(Long id);
@@ -77,12 +77,12 @@ public interface Account<T> {
     void delete(Long id);
 }
 
-/* AlipayAccount.class */
+/* AlipayAccount.java */
 public class AlipayAccount extends Account<AlipayAccount> {
     ...
 }
 
-/* PaypalAccount.class */
+/* PaypalAccount.java */
 public class PaypalAccount extends Account<PaypalAccount> {
     ...
 }
