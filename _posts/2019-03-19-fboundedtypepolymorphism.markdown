@@ -18,7 +18,7 @@ interface Functor<T, F extends Functor<?, F>> {
 虽然这样定义出来的Functor是残疾的,在返回的F那里type信息丢失了，但是这不是定义的锅，而是java的锅。谁让它没有higher kinded types。
 
 
---|||， 偏题了，今天想记录的是F-bounded type polymorphism，就是Functor<T, F extends Functor<?, F>>这块，一个从java5 开始就有了的feature。
+偏题了，今天想记录的是F-bounded type polymorphism，就是Functor<T, F extends Functor<?, F>>这块，一个从java5 开始就有了的feature。
 
 ## 例子
 
