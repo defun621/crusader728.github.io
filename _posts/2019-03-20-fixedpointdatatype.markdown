@@ -7,7 +7,7 @@ categories:
     - Scala 
 ---
 
-为了看懂Free.scala源代码, 花了一点时间了解一些必需的知识。接下来会分几篇来记录自己了解到的FP知识。今天先说的是Fixpoint types
+为了看懂Free.scala源代码, 花了一点时间了解了一些必需的知识。接下来会分几篇来记录自己了解到的FP知识。今天先说的是Fixpoint types
 
 # ADT Employee 作为例子
 
@@ -27,7 +27,7 @@ case class Engineer(name: String) extends Employee(name)
 //                                  List(Engineer("James"), Engineer("Henry"))))
 ```
 
-对这样的ADT，我们一般都用pattern matching来解构。比如如果我要写一个toString方法，我可以这么写
+对这样的ADT，我们一般都用pattern matching来解构。比如说我要写一个toString方法，我可以这么写
 
 ```scala
 val mkString: Employee => String = {
@@ -38,7 +38,7 @@ val mkString: Employee => String = {
 //mkString(li) returns "Li:[Tommy:[Vince,Lin,Ian],Chris:[James,Henry]]"
 ```
 
-又比如，我想统计部门里有多少人我们一般会这么写：
+又比如，我想统计部门里有多少人，可以这么写：
 
 ```scala
 val count: Employee => Int = {
@@ -51,7 +51,7 @@ val count: Employee => Int = {
 
 # 如果我们要存DB的话？
 
-一般每个数据存到DB都会有unique id与之相对应，所以我们需要改动一下我们的Employee数据结构，加入一个id。我们可能会像下面这样改写
+一般每个数据存到DB都会有unique id与之相对应，所以我们需要改动一下我们的Employee数据结构，加入一个id。可能会像下面这样改写
 
 ```scala
 sealed abstract class Employee(id: Option[Long], name: String)
@@ -79,7 +79,7 @@ case class Engineer(name: String) extends Employee(name)
 type Record = (Long, Employee)
 ```
 
-看上去很美。但是问题又来了，subordinates这里又没有了id的信息。然而我们如果把subordinates的类型改成List\[(Long, Employee)\]，之前的改动就没有了意义，因为我们就是要把Long从Employee里拿出去。
+看上去很美。但是问题来了，subordinates这里又没有了id的信息。然而我们如果把subordinates的类型改成List\[(Long, Employee)\]，之前的改动就没有了意义，因为我们就是要把Long从Employee里拿出去。
 
 # 加个Type parameter？
 
@@ -93,7 +93,7 @@ case class Manager[A](name: String, subordinates: List[A]) extends EmployeeF[A](
 case class Engineer[A](name: String) extends EmployeeF[A](name)
 ```
 
-但是问题来了: _Engineer\[Unit\]("Ian")_ 是 __EmployeeF\[Unit\]__ 类型， 那 _List(Engineer\[Unit\]("ian"))_ 的类型就是 __List\[EmployeeF\[Unit\]\]__ ， 所以在Manager那里A就是 __Employee\[Unit\]__ 。这样的话在之前的例子里，Manager tommy 就变成了 __EmployeeF\[EmployeeF\[Unit\]\]__ ，Manager li 的类型就变成了 __EmployeeF\[EmployeeF\[EmployeeF\[Unit\]\]\]__ 。
+问题又来了: _Engineer\[Unit\]("Ian")_ 是 __EmployeeF\[Unit\]__ 类型， 那 _List(Engineer\[Unit\]("ian"))_ 的类型就是 __List\[EmployeeF\[Unit\]\]__ ， 所以在Manager那里A就是 __Employee\[Unit\]__ 。这样的话在之前的例子里，Manager tommy 就变成了 __EmployeeF\[EmployeeF\[Unit\]\]__ ，Manager li 的类型就变成了 __EmployeeF\[EmployeeF\[EmployeeF\[Unit\]\]\]__ 。
 
 这可如何是好？
 
