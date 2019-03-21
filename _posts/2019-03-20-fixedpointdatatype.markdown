@@ -20,11 +20,11 @@ case class Manager(name: String, subordinates: List[Employee]) extends Employee(
 
 case class Engineer(name: String) extends Employee(name)
 
-// example: val li = Manager("Li", 
+// example: val li = Manager("Li", List(
 //                          Manager("Tommy", 
 //                                  List(Engineer("Vince"), Engineer("Lin"), Engineer("Ian"))), 
 //                          Manager("Chris",
-//                                  List(Engineer("James"), Engineer("Henry"))))
+//                                  List(Engineer("James"), Engineer("Henry")))))
 ```
 
 对这样的ADT，我们一般都用pattern matching来解构。比如说我要写一个toString方法，我可以这么写
