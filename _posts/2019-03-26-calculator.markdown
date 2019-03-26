@@ -154,3 +154,7 @@ def term: Parser[Int] = {
 ![结果]({{ site.url }}/assets/calculatorworksheet.png)
 
 成功！
+
+# Reference
+1. Hutton, Graham. Programming in Haskell. 2nd ed., Cambridge University Press, 2016.
+
