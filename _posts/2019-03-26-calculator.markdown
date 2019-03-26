@@ -151,6 +151,6 @@ def term: Parser[Int] = {
 ```
 
 创建一个worksheet试试看
-[结果]({{ site.url }}/assets/calculator.PNG)
+![结果]({{ site.url }}/assets/calculator.PNG)
 
 成功！
