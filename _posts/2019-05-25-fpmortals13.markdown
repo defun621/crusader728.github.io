@@ -1,0 +1,89 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（13）
+date:   2019-05-25 23:55:30 -0800
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
+---
+
+# Monad Transformer Library
+
+Monad transformers are data structures that wrap an underlying value and provide a monadic effect.
+
+Generally, there are three ways to create a monad transformer:
+
++ from the underlying, using the transformer’s constructor
++ from a single valueA, using.pure from the Monad syntax
++ from an F\[A\], using.liftM from the MonadTrans syntax
+
+## MaybeT
+
+With this monad we can write logic that handles optionality in theF\[_\] context, rather than carrying around Option or Maybe.
+
+example:
+
+```scala
+trait Twitter[F[_]] {
+    def getUser(name: String): F[Maybe[User]]
+    def getStars(user: User): F[Int]
+}
+
+def T[F[_]](implicit t: Twitter[F]): Twitter[F] = t
+```
+
+If we use monad as our context, our function isdifficult because we have to handle theEmptycase
+
+```scala
+def stars[F[_]: Monad: Twitter](name: String): F[Maybe[Int]] = for {
+    maybeUser  <- T.getUser(name)
+    maybeStars <- maybeUser.traverse(T.getStars)
+} yield maybeStars
+```
+
+The solution
+
+```scala
+def stars[F[_]: Monad: Twitter](name: String): MaybeT[F, Int] = for {
+    user  <- MaybeT(T.getUser(name))
+    stars <- T.getStars(user).liftM[MaybeT]
+} yield stars
+```
+
+## EitherT
+
+The version using EitherT directly looks like:
+
+```scala
+def stars[F[_]: Monad: Twitter](name: String): EitherT[F, String, Int] = for {
+    user <- EitherT(T.getUser(name).map(_ \/> s"user '$name' not found"))
+    stars <- EitherT.rightT(T.getStars(user))
+} yield stars
+```
+
+## ReaderT
+
+ReaderT is just an alias to another more generally useful data type named after the mathematician Heinrich Kleisli.
+
+```scala
+type ReaderT[F[_], A, B] = Kleisli[F, A, B]
+final case class Kleisli[F[_], A, B](run: A => F[B]) {
+    def dimap[C, D](f: C => A, g: B => D)(implicit F: Functor[F]): Kleisli[F, C, D] = Kleisli(c => run(f(c)).map(g))
+    def >=>[C](k: Kleisli[F, B, C])(implicit F: Bind[F]): Kleisli[F, A, C] = ...
+    def >==>[C](k: B => F[C])(implicit F: Bind[F]): Kleisli[F, A, C] = this >=> Kleisli(k)
+    ...
+}
+object Kleisli {
+    implicit def kleisliFn[F[_], A, B](k: Kleisli[F, A, B]): A => F[B] = k.run
+    ...
+}
+```
+
+The most common use for ReaderT is to provide environment information to a program. 
+
+## WriterT
+
+The opposite to reading is writing. The WriterT monad transformer is typically for writing to a journal.
+
+In a nutshell, WriterT/MonadTell is how to multi-task in FP.
