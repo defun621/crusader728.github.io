@@ -1,0 +1,69 @@
+---
+layout: post
+title:  FP for mortals 读书笔记（13）
+date:   2019-05-28 23:12:30 -0800
+categories: 
+    - Programming
+    - Scala 
+    - fpformortals
+---
+
+# Monad transformers
+
+## StateT
+
+StateT lets us .put, .get and .modify a value that is handled by the monadic context. It is the FP replacement of var.
+
+StateT is an ADT with two members:
+
+```scala
+sealed abstract class StateT[F[_], S, A]
+object StateT {
+    def apply[F[_], S, A](f: S => F[(S, A)]): StateT[F, S, A] = Point(f)
+    private final case class Point[F[_], S, A](
+        run: S => F[(S, A)]
+    ) extends StateT[F, S, A]
+
+private final case class FlatMap[F[_], S, A, B](a: StateT[F, S, A], f: (S, A) => StateT[F, S, B]) extends StateT[F, S, B]
+...
+}
+
+```
+
+A common variant of StateT is when F = Id, giving the underlying type signature S => (S, A)
+
+## IndexedStateT
+
+The implementation of IndexedStateT is much as we have studied, with an extra type parameter allowing the input state S1 and output state S2 to differ:
+
+## ContT
+
+Continuation Passing Style (CPS) is a style of programming where functions never return, instead continuing to the next computation.
+
+```scala
+final case class ContT[F[_], B, A](_run: (A => F[B]) => F[B]) {
+    def run(f: A => F[B]): F[B] = _run(f)
+}
+object IndexedContT {
+    implicit def monad[F[_], B] = new Monad[ContT[F, B, ?]] {
+        def point[A](a: =>A) = ContT(_(a))
+        def bind[A, C](fa: ContT[F, B, A])(f: A => ContT[F, B, C]) = ContT(c_fb => fa.run(a => f(a).run(c_fb)))
+    }
+}
+
+```
+
+we do not typically need to use ContT. However, if we are designing a framework, we should consider exposing the plugin system as ContT callbacks to allow our users more power over their control flow. 
+
+## Transformer Stacks and Ambiguous Implicits
+
+When multiple transformers are combined, we call this a transformer stack and although it is verbose, it is possible to read off the features by reading the transformers
+
+But there are unfortunately practical drawbacks to using monad transformers and their companion Monad typeclasses:
+1. Multiple implicit Monad parameters mean that the compiler cannot find the correct syntax to use for the context.
+
+2. Monads do not compose in the general case, which means that the order of nesting of the transformers is important.
+
+3. All the interpreters must be lifted into the common context.
+
+4. There is a performance cost associated to each layer.
