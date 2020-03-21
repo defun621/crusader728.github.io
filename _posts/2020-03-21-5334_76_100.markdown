@@ -1,0 +1,32 @@
+---
+layout: post
+title:  波尔加 5334 第76至100题
+date:   2019-05-28 23:12:30 -0800
+categories: 
+    - chess5334
+---
++ Re6
++ Rxe7
++ Rd6
++ Bf1
++ Bf5
++ Bf1
++ Bd8
++ Be8
++ Ra8
++ Qh6
++ Qf5
++ Qf7
++ Qe6
++ Rb8
++ Ra8
++ Qf3
++ Qf3
++ Qe8
++ Qe8
++ Qe5
++ Qg5
++ Qf1
++ Qb1
++ Qh1
++ Qe2
