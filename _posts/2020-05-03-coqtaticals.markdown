@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Coq tacticals 小结
+title:  Coq tacticals 小结1
 date:   2020-05-03 17:25:30 -0700
 categories: 
     - Programming
