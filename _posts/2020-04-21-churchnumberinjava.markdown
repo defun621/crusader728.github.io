@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Church number 的Java 实现
-date:   20120-04-21 11:15:30 -0700
+date:   2020-04-21 11:15:30 -0700
 categories: 
   - Programming
 ---
