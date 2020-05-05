@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Coq tactics (2)
+title:  Coq tactics 小结(2)
 date:   2020-05-04 22:25:30 -0700
 categories: 
     - Programming
