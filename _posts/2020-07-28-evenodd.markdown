@@ -7,7 +7,7 @@ categories:
     - Coq
 ---
 
-我的电脑终于推送了version 2004了，把wsl 1变成wsl 2 之后，我决定学cpdt的时候用用看proof general。之前看Software foundations volume I 的时候我一直用的CoqIde，不过既然Cpdt这本书建议使用proof general，那就上emacs呗。
+我的电脑终于推送了version 2004了，把wsl 1变成wsl 2 之后，我决定学cpdt的时候用用看proof general。之前看Software foundations volume I 的时候我一直用的CoqIde，不过既然Cpdt这本书建议使用proof general，那就上emacs吧。
 
 1. 装opam
 按照 https://opam.ocaml.org/doc/Install.html#Binary-distribution 上的做
