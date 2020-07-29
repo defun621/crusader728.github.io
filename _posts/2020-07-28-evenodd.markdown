@@ -1,0 +1,27 @@
+---
+layout: post
+title:  Cpdt 读书笔记 0
+date:   2020-07-28 23:25:30 -0700
+categories: 
+    - Programming
+    - Coq
+---
+
+我的电脑终于推送了version 2004了，把wsl 1变成wsl 2 之后，我决定学cpdt的时候用用看proof general。之前看Software foundations volume I 的时候我一直用的CoqIde，不过既然Cpdt这本书建议使用proof general，那就上emacs呗。
+
+1. 装opam
+按照 https://opam.ocaml.org/doc/Install.html#Binary-distribution 上的做
+
+2. 装OCaml, Coq
+按照 https://ocaml.org/docs/install.html 上说的做。一开始我装了4.10.0, coq 8.12.0. 但是在编译cpdt源代码的时候遇到了
+```
+Error: Argument A is a trailing implicit, so it can't be declared non
+maximal. Please use { } instead of [ ].
+```
+查了一下google，8.10的时候这个还只是Warning，所以在没弄懂代码之前，先降到OCaml 4.08, Coq 8.10.0.
+
+3. 装emacs 和 proof-general
+按照 https://proofgeneral.github.io/#quick-installation-instructions 做。
+
+折腾完环境发现Wsl 2 吃了一半的内存， 可怕。按照 https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261 修改一下wslconfig。明天开始看cpdt了。
+
