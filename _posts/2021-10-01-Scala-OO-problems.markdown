@@ -22,7 +22,7 @@ Here is the problem definition.
 > 
 > The parking lot has motorcycle spots, compact spots, and large spots.
 > 
-> Each row, motorcycle spots id is in range [0,k/4)(0 is included, k/4 is not included), compact spots id is in range [k/4,k/4*3) and large spots id is in range [k/4*3,k).
+> Each row, motorcycle spots id is in range [0,k/4)(0 is included, k/4 is not included), compact spots id is in range [k/4,k/4\*3) and large spots id is in range [k/4\*3,k).
 > 
 > A motorcycle can park in any spot.
 > A car park in single compact spot or large spot.
