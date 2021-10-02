@@ -30,7 +30,7 @@ Here is the problem definition.
 
 First is the definition of *Vehicle*: 
 
-```Scala
+```scala
 sealed abstract class Vehicle extends Product with Serializable
 case class Motorcycle(licensePlate: String) extends Vehicle
 case class Car(licensePlate: String) extends Vehicle
